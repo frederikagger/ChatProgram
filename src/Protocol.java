@@ -1,7 +1,7 @@
 public class Protocol {
 
     public String join(String username, String ip, int port){
-        return "JOIN "+username+", "+ip+":"+port;
+        return "JOIN "+username+" "+ip+" "+port;
     }
 
     public String ok(){

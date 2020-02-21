@@ -1,29 +1,30 @@
 import java.net.*;
 import java.io.*;
-import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class Client implements Runnable {
+public class Client {
+    private Listen listen;
+    private Send send;
     private Socket socket;
-    private DataOutputStream output;
-    private DataInputStream inputSocket;
     private String username = "bob";
-    private Scanner scanner;
-    private GUI gui;
     private String ip;
     private int port;
-    private Protocol protocol = new Protocol();
+    private GUI gui;
+    private ExecutorService executor;
 
-    // constructor to put ip address and port
-    public Client(String ip, int port, GUI gui) {
+    public Client(String ip, int port) {
         try {
             this.socket = new Socket(ip, port); // establish a connection
-            this.gui = gui;
+            this.send = new Send(this.socket);
+            this.listen = new Listen(this.socket);
             this.ip = ip;
             this.port = port;
-        } catch (UnknownHostException u) {
-            u.printStackTrace();
-        } catch (IOException i) {
-            i.printStackTrace();
+            executor = Executors.newFixedThreadPool(2);
+            executor.execute(send);
+            executor.execute(listen);
+        } catch (IOException e){
+            e.printStackTrace();
         }
     }
 
@@ -39,51 +40,23 @@ public class Client implements Runnable {
         return port;
     }
 
-    @Override
-    public void run() {
-        try {
-            scanner = new Scanner(System.in); // takes input from terminal
-            output = new DataOutputStream(socket.getOutputStream());  // sends output to the socket
-            inputSocket = new DataInputStream(new BufferedInputStream(socket.getInputStream())); // takes input from the server socket
-            sendMessage(protocol.join(this.username, this.ip, this.port));
-         //   setUsername();
-         //   output.writeUTF("JOIN<<"+this.username+">>, <<"+socket.getInetAddress()+">>:<<"+socket.getPort()+">>");
-        //    sendMessages();
-        } catch(IOException i) {
-            i.printStackTrace();
-        }
+    public Listen getListen() {
+        return listen;
     }
 
-    public void sendMessage(String message) throws IOException {
-        output.writeUTF(message);
+    public Send getSend() {
+        return send;
     }
 
-    public void setUsername(){
-        gui.getjTextArea().append("Enter username: \n");
+/* public void setUsername(){
+//        gui.getjTextArea().append("Enter username: \n");
         System.out.println("Enter username: ");
-        this.username = gui.getTextField().getText();
-      //  this.username = scanner.next();
+//        this.username = gui.getTextField().getText();
+        this.username = scanner.next();
         while (this.username.length()>12){
             System.out.println("Username has to be less than 12 characters. Try again.\nEnter username: ");
             gui.getjTextArea().append("Username has to be less than 12 characters. Try again.\nEnter username: ");
             this.username = gui.getTextField().getText();
         }
-    }
-
-    public void sendMessages() throws IOException {
-        String line = "";
-        while (!line.equalsIgnoreCase("Quit")){ // keep reading until "Quit" is input
-            try {
-                line = scanner.nextLine();
-                output.writeUTF(this.username+": "+line);
-            }
-            catch(IOException i){
-                i.printStackTrace();
-                break;
-            }
-        }
-        output.close(); // close the connection
-        socket.close();
-        scanner.close();
-    }
+    }*/
 }
