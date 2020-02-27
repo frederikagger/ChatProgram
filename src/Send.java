@@ -1,4 +1,3 @@
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -8,9 +7,11 @@ public class Send implements Runnable{
     private Socket socket;
     private DataOutputStream output;
     private Scanner scanner;
+    private Client client;
 
-    public Send(Socket socket) {
+    public Send(Socket socket, Client client) {
         this.socket = socket;
+        this.client = client;
     }
 
     @Override
@@ -39,5 +40,6 @@ public class Send implements Runnable{
         output.close(); // close the connection
         socket.close();
         scanner.close();
+
     }
 }
